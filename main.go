@@ -78,14 +78,14 @@ func (p *Task) Configure(configFile string, e *error) error {
 	//for _, v := range conf.Voice {
 	//	p.voiceMng.add(v)
 	//}
-	time.Sleep(500 * time.Millisecond)
+	// time.Sleep(500 * time.Millisecond)
 
 	return err
 }
 
 // Main task
 func (p *Task) Main(configFile string, m *[]gobou.Message) error {
-	n := 5
+	n := 1
 	/*
 		q := Qiita{
 			SinceTime: time.Now().Add(-10000 * time.Second),
@@ -93,7 +93,7 @@ func (p *Task) Main(configFile string, m *[]gobou.Message) error {
 	*/
 	q := p.config.Qiita
 	t := q.SinceTime
-	*m = []gobou.Message{}
+	mes := []gobou.Message{}
 L:
 	for i := 1; i <= n; i++ {
 		client, err := http.Get(q.RequestURL(i))
@@ -112,13 +112,14 @@ L:
 			if at.After(t) {
 				user := item.User
 				// Notify(fmt.Sprintf("qiita by %s", user.ID), title)
-				s = fmt.Sprintf("%s\nqiita by %s", s, user.ID)
+				s = fmt.Sprintf("%sqiita by %s\n", s, user.ID)
 			} else {
 				break L
 			}
-			*m = append(*m, gobou.Print(s), gobou.Say(fmt.Sprint(i)))
+			mes = append(mes, gobou.Print(s), gobou.Say(fmt.Sprint(i)))
 		}
 	}
+	*m = mes
 	//data, err := p.bbs.Read()
 
 	return nil
@@ -131,7 +132,7 @@ func (p *Task) SaveData(configFile string, e *error) error {
 
 // SaveConfig is loaded by gobou
 func (p *Task) SaveConfig(configFile string, e *error) error {
-	//p.config.Save(configFile)
+	p.config.Save(configFile)
 	return nil
 }
 
@@ -168,12 +169,6 @@ type QUser struct {
 }
 
 func main() {
-	task := &Task{}
-	task.config = Config{
-		Qiita: Qiita{
-			SinceTime: time.Now().Add(-3 * time.Hour),
-		},
-	}
 	gobou.Register(&Task{})
 }
 
